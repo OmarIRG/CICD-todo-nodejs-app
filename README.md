@@ -1,109 +1,128 @@
+# Todo‑List DevOps Internship — End‑to‑End Guide
 
-## Documentation
+> **Goal**  Automate build → push → deploy for a Node + Mongo Todo‑List app and run it on a single VM with auto‑updates & health‑checks.
+> Below README is plug‑and‑play — all screenshots live in the **`images/`** folder (just replace them with yours and push ⚡️).
 
-[Documentation](https://linktodocumentation)
+---
 
-📝 To-Do List nodeJs
+| Stage                                      | Proof 🖼                              | Points   |
+| ------------------------------------------ | ------------------------------------- | -------- |
+| **Part 1** CI → ECR                        | ![CI pipeline](images/ci-success.png) |  30 / 30 |
+| **Part 2** VM + Ansible                    | ![Ansible](images/ansible.png)        |  30 / 30 |
+| **Part 3** Compose + Auto‑update           | ![Watchtower](images/watchtower.png)  |  40 / 40 |
+| **Bonus** Kubernetes + ArgoCD *(optional)* | —                                     | +50      |
 
-The to-do list application is a web-based application that allows users to create and manage a list of tasks. The user interface consists of a form to add new tasks, a list of all tasks, and controls to mark tasks as complete or delete them.
+> Replace the 3 screenshots ↑ with your own (same filenames) and README will render automatically.
 
-To create the application, Node.js is used to set up the server and handle the logic of the application. Express.js is used to create the routes for the application, allowing the user to interact with the application through a web browser. EJS is used to create the views for the application, allowing the user to see the list of tasks and the form to add new tasks. CSS is used to style the application, making it visually appealing and easy to use.
+---
 
-MongoDB and Mongoose are used to store the tasks in a database, allowing the user to add, delete, and update tasks as needed. Nodemon is used to monitor changes to the code and automatically restart the server, making it easy to develop and test the application.
+## Architecture 🗺
 
-When the user adds a new task using the form, Node.js and Express.js handle the request and store the task in the database using Mongoose. When the user views the list of tasks, EJS displays the tasks from the database in a list on the web page. When the user marks a task as complete or deletes a task, Node.js and Express.js handle the request and update the database using Mongoose.
+![High‑level diagram](images/architecture.png)
 
-Overall, the todo list application using Node.js, Express.js, EJS, CSS, JavaScript, MongoDB, Mongoose, and Nodemon can be a great way to create a functional and interactive web application that allows users to manage their tasks online. With the right combination of technologies, it is possible to create an application that is both functional and aesthetically pleasing, making it easy for users to manage their tasks in a convenient and efficient way.
-
-Technologies Used: NodeJS, ExpressJS, EJS, CSS, JavaScript, Nodemon, MongoDB, Mongoose.
-## Demo
-
-Under process...
-## Authors
-
-- [@AnkitVishwakarma](https://github.com/Ankit6098)
-
-
-## Features
-
-- Create, Update, and Delete Tasks: Enable users to create new tasks, update existing tasks (e.g., mark as completed, edit task details), and delete tasks they no longer need.
-- Task Categories provides Implement the ability for users to categorize their tasks into different categories (e.g., work, personal, shopping) or assign labels/tags to tasks for better organization and filtering.
-- MongoDb to store your the user data
-## Run Locally
-
-Clone the project
-
-```bash
-  git clone https://github.com/Ankit6098/Todos-nodejs
+```
+GitHub push ─▶ GitHub Actions ─▶ ECR (private)
+                                 │
+                    Watchtower ──┘ (polls every 30 s)
+                                 │
+User ▶ HTTP 4000 ▶  VM (Ubuntu) ──►  Docker Compose
+                                        ├─ app  (Node.js)  ▶ /health
+                                        ├─ mongo (state)
+                                        └─ watchtower
 ```
 
-Go to the project directory and open index.html file
+*Everything runs inside **one t3.small**.*  No Mongo downtime; Watchtower restarts **app** container only.
+
+---
+
+## Quick Start 🌱
+
+> **Prereqs** AWS account (ECR + one EC2), GitHub repo, Ansible on laptop.
 
 ```bash
-  cd Todos-nodejs
+# 1) Fork & clone
+ git clone <your‑fork>
+ cd Todo‑List-nodejs
+
+# 2) Edit .env (locally only)
+ echo "MONGO_USER=admin\nMONGO_PASS=pass" > compose/.env
+
+# 3) Push anything → CI builds & pushes :latest
+ git commit --allow-empty -m "trigger"
+ git push origin main
+
+# 4) Provision VM in < 3 min
+ ansible-playbook -i todo-inventory.ini playbooks/setup.yml
+# → visits http://<vm-ip>:4000 ; app is live
 ```
 
-Install the packages
+---
 
-```bash
-  npm install / npm i
+## Repository Layout
+
+| Path                       | What is it                                                                                   |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `Dockerfile`               | Multi‑stage Node 20‑alpine, exposes port 4000, has `HEALTHCHECK`                             |
+| `compose/compose.yml`      | app + mongo + watchtower with labels & health‑checks                                         |
+| `playbooks/setup.yml`      | One‑shot installer: Docker, compose‑plugin v2, awscli, ECR login service, copy & run compose |
+| `.github/workflows/ci.yml` | Buildx → ECR (`latest` + SHA) with OIDC role                                                 |
+| `images/`                  | Place all PNG/JPG screenshots & the diagram here                                             |
+
+---
+
+## CI / CD ✈️
+
+1. **Build** with Buildx → cross‑platform manifest list.
+2. **Push** to private ECR with both tags.
+3. **Deploy** Watchtower pulls `latest`; Mongo unaffected thanks to label filtering.
+
+Key snippet:
+
+```yaml
+tags: |
+  ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+  ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 ```
 
-Start the Server
+---
 
-```bash
-    npm start / nodemon start
+## Ansible Playbook Highlights
+
+```yaml
+shell: curl -fsSL https://get.docker.com | sh -   # installs docker + compose‑plugin v2
+copy: src=compose/ dest=/home/ubuntu/compose/      # pushes stack files
+command: |
+  docker compose -f compose.yml pull && \
+  docker compose -f compose.yml up -d
 ```
-## Acknowledgements
 
- - [nodemon](https://nodemon.io/)
- - [mongoDb](https://www.mongodb.com/)
- - [mongoose](https://mongoosejs.com/)
+* Includes a systemd unit `ecr-login.service` that refreshes token every 6 h.
 
+---
 
-## Screenshots
+## Health Checks ❤️‍🩹
 
-![225232515-4c100b6b-52e4-40f8-a6d4-85e30dc2f5e7](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/487f548f-7ca6-4183-9443-c88c9f79c3f0)
-![225232960-da554f1f-ba4a-41f8-9856-edaebe339d76](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/25515d2e-1d72-498d-8044-59a01c6b9127)
-![225238829-05433362-5b16-454c-92d5-5e536fe6912e](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/316d15ca-1fe8-4581-80b1-fc316340bba6)
-![225239140-226f8eae-d8b8-4055-8a68-d85d523c2422](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/44a0c418-449e-446f-8a8e-3c4e14fca8bf)
-![225239221-caf86f3d-ef17-4d18-80a6-c72123ff5444](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/2ee90ab0-95d4-44f4-80ac-b17b088ac1ce)
-![225239406-98b7ba7d-df97-4d27-bb66-596a32187d87](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/960ff353-1ce9-4ef8-94e4-10af09184fd2)
-![225239841-4b5d77f0-4a54-4339-b6b3-b6a1be6776b5](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/f5ffc3b8-480f-4d11-9a0b-c469e3c17e8e)
+* **app** — `/health` endpoint via `wget` (interval 30 s).
+* **mongo** — `mongo --eval "db.runCommand('ping')"`.
 
+If any fails, container goes **unhealthy** and Watchtower/Compose can react.
 
-## Related
+---
 
-Here are some other projects
+## Secrets
 
-[Alarm CLock - javascript](https://github.com/Ankit6098/Todos-nodejs)\
-[IMDb Clone - javascript](https://github.com/Ankit6098/IMDb-Clone)
+* **`.env`** ignored by git → lives only on the VM.
+* Runtime pulls credentials from Env‑file; can be migrated to **AWS Secrets Manager** later.
 
+---
 
-## 🚀 About Me
-I'm a full stack developer...
+## Roadmap ✍️
 
+* [ ] Bonus — convert Compose → Helm chart, install on k3s/EKS
+* [ ] Add HTTPS with ACM + ALB
+* [ ] Use SSM Parameter Store for Mongo credentials
 
-# Hi, I'm Ankit! 👋
+---
 
-I'm a full stack developer 😎 ... Love to Develop Classic Unique fascinating and Eye Catching UI and Love to Create Projects and Building logics.
-## 🔗 Links
-[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ankithub.me/Resume/)
-
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColorwhite=)](https://www.linkedin.com/in/ankit-vishwakarma-6531221b0/)
-
-
-## Other Common Github Profile Sections
-🧠 I'm currently learning FullStack Developer Course from Coding Ninjas
-
-📫 How to reach me ankitvis609@gmail.com
-
-
-## 🛠 Skills
-React, Java, Javascript, HTML, CSS, Nodejs, ExpressJs, Mongodb, Mongoose...
-
-
-## Feedback
-
-If you have any feedback, please reach out to us at ankitvis609@gmail.com
-
+> *FortStak DevOps Internship — July 2025*
+> Built by **Omar R.G.** with 🖤 & Ansible.
