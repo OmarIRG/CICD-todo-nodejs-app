@@ -5,12 +5,12 @@
 
 ---
 
-| Stage                                      | Proof 🖼                              | Points   |
-| ------------------------------------------ | ------------------------------------- | -------- |
-| **Part 1** CI → ECR                        | ![CI pipeline](images/ci-success.png) |  30 / 30 |
-| **Part 2** VM + Ansible                    | ![Ansible](images/ansible.png)        |  30 / 30 |
-| **Part 3** Compose + Auto‑update           | ![Watchtower](images/watchtower.png)  |  40 / 40 |
-| **Bonus** Kubernetes + ArgoCD *(optional)* | —                                     | +50      |
+| Stage                                      | Proof 🖼                                | Points   |
+| ------------------------------------------ | --------------------------------------- | -------- |
+| **Part 1** CI → ECR                        | ![CI pipeline](images/ci-success.jpg)   |  30 / 30 |
+| **Part 2** VM + Ansible                    | ![Ansible](images/ansible-playbook.jpg) |  30 / 30 |
+| **Part 3** Compose + Auto‑update           | ![Watchtower](images/compose-ps.jpg)    |  40 / 40 |
+| **Bonus** Kubernetes + ArgoCD *(optional)* | —                                       | +50      |
 
 > Replace the 3 screenshots ↑ with your own (same filenames) and README will render automatically.
 
