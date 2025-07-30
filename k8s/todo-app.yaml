@@ -9,7 +9,7 @@ spec:
     namespace: default
   project: default
   source:
-    repoURL: https://github.com/YOUR_USER/todo-app.git
+    repoURL: https://github.com/OmarIRG/todo-app.git
     path: k8s
     targetRevision: infra
   syncPolicy:
