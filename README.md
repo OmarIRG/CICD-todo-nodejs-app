@@ -61,6 +61,7 @@ Every checkbox is **done** – the entire pipeline is live end-to-end.
 |10 | **Expose K8s Service (NodePort)** | Verified external connectivity. | ![NodePort](images/nodeport.jpg) |
 |11 | **Set up Argo CD** | Added `Application` CR in *infra-repo*. | ![Argo CD](images/argo%20cd%20working.jpg) |
 |12 | **First successful Argo CD sync** | Green ✔ – app live via Ingress. | ![Argo CD app](images/argo%20cd%20app%20working.jpg) |
+|13 | **Second successful App Working** | Working App On Ec2. | ![Argo CD app](images/appworking.jpg) |
 
 ---
 
