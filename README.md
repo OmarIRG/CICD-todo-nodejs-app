@@ -52,7 +52,6 @@ npm ci && npm run dev       # Swagger → http://localhost:3000/api-docs
 | Job | Action |
 |-----|--------|
 | **install** | `npm ci` |
-| **lint**    | ESLint + Prettier |
 | **test**    | `npm test --coverage` |
 | **build_push** | Build multi-arch image, push to Docker Hub |
 
@@ -73,6 +72,5 @@ MIT – see `LICENSE`.
 
 ## Authors
 
-*DevOps Internship Team – Summer 2025*  
-Mentor – **Omar I.** (<https://github.com/OmarIRG>)  
-Contributors – *add your name via PR!*  
+*DevOps Internship Member – Summer 2025*  
+– **Omar Islam.** (<https://github.com/OmarIRG>)  
