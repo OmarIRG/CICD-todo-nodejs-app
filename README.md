@@ -78,7 +78,6 @@ Every checkbox is **done** – the entire pipeline is live end-to-end.
 | Job | Action |
 |-----|--------|
 | **install**   | `npm ci` |
-| **lint**      | ESLint + Prettier |
 | **test**      | `npm test --coverage` |
 | **build_push**| Build multi-arch image, push to Docker Hub |
 
@@ -96,7 +95,6 @@ Every checkbox is **done** – the entire pipeline is live end-to-end.
 | Task | Command |
 |------|---------|
 | Run tests   | `npm test` |
-| Lint code   | `npm run lint` |
 | Build image | `docker build -t todo-app:dev .` |
 | Dev stack   | `docker compose up -d` |
 
