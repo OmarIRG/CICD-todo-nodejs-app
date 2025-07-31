@@ -43,18 +43,7 @@ npm ci && npm run dev       # Swagger → http://localhost:3000/api-docs
 
 ## High-level architecture
 
-```text
-Developer ──git push──► GitHub Actions (CI) ──► Docker Hub
-                                  │
-                                  │ image-tag commit
-                                  ▼
-                        GitHub Actions (CD) ──► infra-repo update
-                                                   │
-                                                   ▼
-                                              Argo CD ──► k3s cluster
-```
-
----
+| ![Architecture](images/Arch.jpg) |
 
 ## CI / CD details
 
@@ -73,24 +62,6 @@ Developer ──git push──► GitHub Actions (CI) ──► Docker Hub
 2. Patch image tag in `k8s/base/deployment.yaml`.  
 3. Commit back to **`infra-repo`**.  
 4. Argo CD auto-syncs and rolls out.
-
----
-
-## Local recipes
-
-| Task | Command |
-|------|---------|
-| Run tests   | `npm test` |
-| Lint code   | `npm run lint` |
-| Build image | `docker build -t todo-app:dev .` |
-| Dev stack   | `docker compose up -d` |
-
----
-
-## Contributing
-
-Use **Conventional Commits** (`feat:`, `fix:` …) and keep CI green before opening a PR.  
-Infrastructure changes belong in **`infra-repo`**.
 
 ---
 
