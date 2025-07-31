@@ -43,7 +43,7 @@ npm ci && npm run dev       # Swagger → http://localhost:3000/api-docs
 
 ## High-level architecture
 
-| ![Architecture](images/Arch.jpg) |
+![Architecture](images/Arch.png) 
 
 ## CI / CD details
 
